@@ -2,6 +2,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 import os
 import certifi
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -10,12 +11,16 @@ load_dotenv()
 MONGODB_URL = os.getenv("MONGODB_URL")
 DB_NAME = os.getenv("DB_NAME", "location_tracking")
 
-# Initialize database connection
-client = AsyncIOMotorClient(
-    MONGODB_URL,
-    tlsCAFile=certifi.where()
-)
-db = client[DB_NAME]
+# Create a new event loop for each request
+def get_database():
+    client = AsyncIOMotorClient(
+        MONGODB_URL,
+        tlsCAFile=certifi.where()
+    )
+    return client[DB_NAME]
+
+# Get database instance
+db = get_database()
 
 # Export collections
 users_collection = db.users

@@ -3,12 +3,12 @@ from datetime import datetime
 from bson import ObjectId
 import logging
 from models import UserCreate, UserResponse
-from database import users_collection  # נחזור להשתמש ב-users_collection
+from database import users_collection
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.post("/create", response_model=UserResponse)
+@router.post("/create", response_model=UserResponse)  # וודא שזה POST ולא GET
 async def create_user(user: UserCreate):
     """Create a new user"""
     try:
