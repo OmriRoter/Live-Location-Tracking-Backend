@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 import logging
 from models import LocationUpdate, LocationResponse
-from database import get_database
+from database import db
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -12,9 +12,6 @@ router = APIRouter()
 async def update_location(location: LocationUpdate):
     """Update user location"""
     try:
-        # Get fresh database connection
-        db = get_database()
-        
         # Verify user exists
         try:
             user_id_obj = ObjectId(location.user_id)
@@ -57,9 +54,6 @@ async def update_location(location: LocationUpdate):
 async def get_user_location(user_id: str):
     """Get user's last known location"""
     try:
-        # Get fresh database connection
-        db = get_database()
-        
         # Verify user exists
         try:
             user_id_obj = ObjectId(user_id)

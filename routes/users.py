@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 import logging
 from models import UserCreate, UserResponse, UserStatusUpdate
-from database import users_collection, locations_collection
+from database import db  # שינוי כאן - משתמשים ב-db ישירות
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -13,7 +13,7 @@ async def create_user(user: UserCreate):
     """Create a new user"""
     try:
         # Check if username already exists
-        if await users_collection.find_one({"username": user.username}):
+        if await db.users.find_one({"username": user.username}):
             raise HTTPException(status_code=400, detail="Username already exists")
         
         # Create new user with is_active field
@@ -23,7 +23,7 @@ async def create_user(user: UserCreate):
             "is_active": True
         }
         
-        result = await users_collection.insert_one(user_data)
+        result = await db.users.insert_one(user_data)
         
         # Create default location for the user
         default_location = {
@@ -33,7 +33,7 @@ async def create_user(user: UserCreate):
             "last_updated": datetime.utcnow()
         }
         
-        await locations_collection.insert_one(default_location)
+        await db.locations.insert_one(default_location)
         
         return UserResponse(
             id=str(result.inserted_id),
@@ -56,18 +56,18 @@ async def update_user_status(user_id: str, status_update: UserStatusUpdate):
             raise HTTPException(status_code=400, detail="Invalid user ID format")
         
         # Check if user exists
-        user = await users_collection.find_one({"_id": user_id_obj})
+        user = await db.users.find_one({"_id": user_id_obj})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
         # Update user status
-        await users_collection.update_one(
+        await db.users.update_one(
             {"_id": user_id_obj},
             {"$set": {"is_active": status_update.is_active}}
         )
         
         # Get updated user
-        updated_user = await users_collection.find_one({"_id": user_id_obj})
+        updated_user = await db.users.find_one({"_id": user_id_obj})
         
         return UserResponse(
             id=str(updated_user["_id"]),

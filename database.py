@@ -2,7 +2,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 import os
 import certifi
-import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -11,17 +10,24 @@ load_dotenv()
 MONGODB_URL = os.getenv("MONGODB_URL")
 DB_NAME = os.getenv("DB_NAME", "location_tracking")
 
-# Create a new event loop for each request
-def get_database():
-    client = AsyncIOMotorClient(
-        MONGODB_URL,
-        tlsCAFile=certifi.where()
-    )
-    return client[DB_NAME]
+# Create MongoDB client
+client = AsyncIOMotorClient(
+    MONGODB_URL,
+    tlsCAFile=certifi.where(),
+    serverSelectionTimeoutMS=5000
+)
 
 # Get database instance
-db = get_database()
+db = client[DB_NAME]
 
 # Export collections
 users_collection = db.users
 locations_collection = db.locations
+
+# Test connection on startup
+async def connect_and_check():
+    try:
+        await client.admin.command('ping')
+    except Exception as e:
+        print(f"Failed to connect to MongoDB: {e}")
+        raise e
