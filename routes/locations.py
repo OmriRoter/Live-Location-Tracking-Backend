@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 import logging
 from models import LocationUpdate, LocationResponse
-from database import db
+from database import get_database, get_users_collection, get_locations_collection
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -12,13 +12,16 @@ router = APIRouter()
 async def update_location(location: LocationUpdate):
     """Update user location"""
     try:
+        users_collection = get_users_collection()
+        locations_collection = get_locations_collection()
+        
         # Verify user exists
         try:
             user_id_obj = ObjectId(location.user_id)
         except:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
 
-        user = await db.users.find_one({"_id": user_id_obj})
+        user = await users_collection.find_one({"_id": user_id_obj})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -31,7 +34,7 @@ async def update_location(location: LocationUpdate):
         }
         
         # Update in database
-        await db.locations.update_one(
+        await locations_collection.update_one(
             {"user_id": location.user_id},
             {"$set": location_data},
             upsert=True
@@ -54,6 +57,9 @@ async def update_location(location: LocationUpdate):
 async def get_user_location(user_id: str):
     """Get user's last known location"""
     try:
+        users_collection = get_users_collection()
+        locations_collection = get_locations_collection()
+        
         # Verify user exists
         try:
             user_id_obj = ObjectId(user_id)
@@ -61,12 +67,12 @@ async def get_user_location(user_id: str):
             raise HTTPException(status_code=400, detail="Invalid user ID format")
 
         # Check if user exists
-        user = await db.users.find_one({"_id": user_id_obj})
+        user = await users_collection.find_one({"_id": user_id_obj})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
         # Get location
-        location = await db.locations.find_one({"user_id": user_id})
+        location = await locations_collection.find_one({"user_id": user_id})
         if not location:
             raise HTTPException(status_code=404, detail="Location not found for this user")
 

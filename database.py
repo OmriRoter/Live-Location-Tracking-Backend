@@ -10,24 +10,18 @@ load_dotenv()
 MONGODB_URL = os.getenv("MONGODB_URL")
 DB_NAME = os.getenv("DB_NAME", "location_tracking")
 
-# Create MongoDB client
-client = AsyncIOMotorClient(
-    MONGODB_URL,
-    tlsCAFile=certifi.where(),
-    serverSelectionTimeoutMS=5000
-)
+def get_database():
+    """Get a fresh database connection for each request"""
+    client = AsyncIOMotorClient(
+        MONGODB_URL,
+        tlsCAFile=certifi.where(),
+        serverSelectionTimeoutMS=5000
+    )
+    return client[DB_NAME]
 
-# Get database instance
-db = client[DB_NAME]
+# Helper functions to get fresh collection instances
+def get_users_collection():
+    return get_database().users
 
-# Export collections
-users_collection = db.users
-locations_collection = db.locations
-
-# Test connection on startup
-async def connect_and_check():
-    try:
-        await client.admin.command('ping')
-    except Exception as e:
-        print(f"Failed to connect to MongoDB: {e}")
-        raise e
+def get_locations_collection():
+    return get_database().locations
