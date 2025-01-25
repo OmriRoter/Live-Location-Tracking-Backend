@@ -6,11 +6,16 @@ class UserCreate(BaseModel):
     """Model for creating a new user"""
     username: str
 
-class UserResponse(BaseModel):  # שינינו מ-User ל-UserResponse
+class UserStatusUpdate(BaseModel):
+    """Model for updating user status"""
+    is_active: bool
+
+class UserResponse(BaseModel):
     """Model for user response"""
     id: str
     username: str
     created_at: datetime
+    is_active: bool = True
 
 class LocationUpdate(BaseModel):
     """Model for updating a user's location"""
@@ -18,7 +23,7 @@ class LocationUpdate(BaseModel):
     latitude: float
     longitude: float
 
-class LocationResponse(BaseModel):  # הוספנו מודל תגובה למיקום
+class LocationResponse(BaseModel):
     """Model for location response"""
     user_id: str
     latitude: float
