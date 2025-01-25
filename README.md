@@ -4,9 +4,10 @@ A lightweight, real-time location tracking API built with FastAPI and MongoDB. T
 
 ## Features
 
-- User creation and management
+- User creation and management with active status tracking
 - Real-time location updates
 - Location retrieval for specific users
+- Automatic default location creation for new users
 - Built with FastAPI for high performance
 - MongoDB for reliable data storage
 - Deployed on Vercel for serverless execution
@@ -21,7 +22,7 @@ https://live-location-tracking-backend.vercel.app
 
 ### 1. Create New User
 
-Creates a new user in the system.
+Creates a new user in the system with default active status and location.
 
 **Endpoint:** `POST /api/users/create`
 
@@ -39,7 +40,8 @@ Creates a new user in the system.
 {
   "id": "string",
   "username": "string",
-  "created_at": "datetime"
+  "created_at": "datetime",
+  "is_active": true
 }
 ```
 
@@ -48,7 +50,38 @@ Creates a new user in the system.
 - `400 Bad Request` - Username already exists
 - `500 Internal Server Error` - Server error
 
-### 2. Update User Location
+### 2. Update User Status
+
+Updates a user's active status.
+
+**Endpoint:** `PATCH /api/users/{user_id}/status`
+
+**Request Body:**
+
+```json
+{
+    "is_active": boolean
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+    "id": "string",
+    "username": "string",
+    "created_at": "datetime",
+    "is_active": boolean
+}
+```
+
+**Possible Errors:**
+
+- `400 Bad Request` - Invalid ID format
+- `404 Not Found` - User not found
+- `500 Internal Server Error` - Server error
+
+### 3. Update User Location
 
 Updates the current location of a user.
 
@@ -81,7 +114,7 @@ Updates the current location of a user.
 - `404 Not Found` - User not found
 - `500 Internal Server Error` - Server error
 
-### 3. Get User Location
+### 4. Get User Location
 
 Returns the latest location of a specific user.
 
@@ -124,6 +157,25 @@ const response = await fetch(
 
 const user = await response.json();
 // Store user.id for future use
+```
+
+### Updating User Status
+
+```javascript
+const response = await fetch(
+  `https://live-location-tracking-backend.vercel.app/api/users/${userId}/status`,
+  {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      is_active: false,
+    }),
+  }
+);
+
+const user = await response.json();
 ```
 
 ### Updating User Location
@@ -189,7 +241,7 @@ const location = await response.json();
 
 ### CORS
 
-The API supports CORS and allows access from all domains (\*). For production use, consider restricting this to specific domains.
+The API supports CORS and allows access from all domains (*). For production use, consider restricting this to specific domains.
 
 ## Technical Details
 
