@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from bson import ObjectId
 import logging
-from models import UserCreate, UserResponse, UserStatusUpdate
+from models import UserCreate, UserResponse, UserStatusUpdate, UserVerify
 from database import get_users_collection, get_locations_collection
 
 logger = logging.getLogger(__name__)
@@ -15,11 +15,9 @@ async def create_user(user: UserCreate):
         users_collection = get_users_collection()
         locations_collection = get_locations_collection()
         
-        # Check if username already exists
         if await users_collection.find_one({"username": user.username}):
             raise HTTPException(status_code=400, detail="Username already exists")
         
-        # Create new user with is_active field
         user_data = {
             "username": user.username,
             "created_at": datetime.utcnow(),
@@ -28,7 +26,6 @@ async def create_user(user: UserCreate):
         
         result = await users_collection.insert_one(user_data)
         
-        # Create default location for the user
         default_location = {
             "user_id": str(result.inserted_id),
             "latitude": 0.0,
@@ -48,30 +45,53 @@ async def create_user(user: UserCreate):
         logger.error(f"Error creating user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/verify", response_model=UserResponse)
+async def verify_user(user: UserVerify):
+    """Verify user exists"""
+    try:
+        users_collection = get_users_collection()
+        
+        try:
+            user_id_obj = ObjectId(user.user_id)
+        except:
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+        
+        user_data = await users_collection.find_one({"_id": user_id_obj})
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return UserResponse(
+            id=str(user_data["_id"]),
+            username=user_data["username"],
+            created_at=user_data["created_at"],
+            is_active=user_data["is_active"]
+        )
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error verifying user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.patch("/{user_id}/status", response_model=UserResponse)
 async def update_user_status(user_id: str, status_update: UserStatusUpdate):
     """Update user's active status"""
     try:
         users_collection = get_users_collection()
         
-        # Verify user ID format
         try:
             user_id_obj = ObjectId(user_id)
         except:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
         
-        # Check if user exists
         user = await users_collection.find_one({"_id": user_id_obj})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Update user status
         await users_collection.update_one(
             {"_id": user_id_obj},
             {"$set": {"is_active": status_update.is_active}}
         )
         
-        # Get updated user
         updated_user = await users_collection.find_one({"_id": user_id_obj})
         
         return UserResponse(

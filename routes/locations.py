@@ -15,7 +15,6 @@ async def update_location(location: LocationUpdate):
         users_collection = get_users_collection()
         locations_collection = get_locations_collection()
         
-        # Verify user exists
         try:
             user_id_obj = ObjectId(location.user_id)
         except:
@@ -25,7 +24,6 @@ async def update_location(location: LocationUpdate):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # Create location data
         location_data = {
             "user_id": location.user_id,
             "latitude": location.latitude,
@@ -33,7 +31,6 @@ async def update_location(location: LocationUpdate):
             "last_updated": datetime.utcnow()
         }
         
-        # Update in database
         await locations_collection.update_one(
             {"user_id": location.user_id},
             {"$set": location_data},
@@ -60,18 +57,18 @@ async def get_user_location(user_id: str):
         users_collection = get_users_collection()
         locations_collection = get_locations_collection()
         
-        # Verify user exists
         try:
             user_id_obj = ObjectId(user_id)
         except:
             raise HTTPException(status_code=400, detail="Invalid user ID format")
 
-        # Check if user exists
         user = await users_collection.find_one({"_id": user_id_obj})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+            
+        if not user.get("is_active", False):
+            raise HTTPException(status_code=400, detail="User is not active")
 
-        # Get location
         location = await locations_collection.find_one({"user_id": user_id})
         if not location:
             raise HTTPException(status_code=404, detail="Location not found for this user")

@@ -6,6 +6,10 @@ class UserCreate(BaseModel):
     """Model for creating a new user"""
     username: str
 
+class UserVerify(BaseModel):
+    """Model for verifying user"""
+    user_id: str
+
 class UserStatusUpdate(BaseModel):
     """Model for updating user status"""
     is_active: bool

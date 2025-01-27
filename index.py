@@ -17,4 +17,8 @@ app.add_middleware(
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(locations_router, prefix="/api/locations", tags=["locations"])
 
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to Live Location API"}
+
 handler = Mangum(app, lifespan="off")

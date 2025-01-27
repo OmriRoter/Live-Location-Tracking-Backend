@@ -5,7 +5,6 @@ from routes.locations import router as locations_router
 
 app = FastAPI(title="Live Location API")
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,7 +13,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routes
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(locations_router, prefix="/api/locations", tags=["locations"])
 
