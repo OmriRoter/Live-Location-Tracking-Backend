@@ -5,10 +5,8 @@ A lightweight, real-time location tracking API built with FastAPI and MongoDB. T
 ## Features
 
 - User creation and management
-- User verification (login)
 - Real-time location updates
 - Location retrieval for specific users
-- Active status management
 - Built with FastAPI for high performance
 - MongoDB for reliable data storage
 - Deployed on Vercel for serverless execution
@@ -41,8 +39,7 @@ Creates a new user in the system.
 {
   "id": "string",
   "username": "string",
-  "created_at": "datetime",
-  "is_active": true
+  "created_at": "datetime"
 }
 ```
 
@@ -51,69 +48,7 @@ Creates a new user in the system.
 - `400 Bad Request` - Username already exists
 - `500 Internal Server Error` - Server error
 
-### 2. Verify User (Login)
-
-Verifies if a user exists in the system.
-
-**Endpoint:** `POST /api/users/verify`
-
-**Request Body:**
-
-```json
-{
-  "user_id": "string"
-}
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "id": "string",
-  "username": "string",
-  "created_at": "datetime",
-  "is_active": true
-}
-```
-
-**Possible Errors:**
-
-- `400 Bad Request` - Invalid ID format
-- `404 Not Found` - User not found
-- `500 Internal Server Error` - Server error
-
-### 3. Update User Status
-
-Updates user's active status.
-
-**Endpoint:** `PATCH /api/users/{user_id}/status`
-
-**Request Body:**
-
-```json
-{
-  "is_active": boolean
-}
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "id": "string",
-  "username": "string",
-  "created_at": "datetime",
-  "is_active": boolean
-}
-```
-
-**Possible Errors:**
-
-- `400 Bad Request` - Invalid ID format
-- `404 Not Found` - User not found
-- `500 Internal Server Error` - Server error
-
-### 4. Update User Location
+### 2. Update User Location
 
 Updates the current location of a user.
 
@@ -146,9 +81,9 @@ Updates the current location of a user.
 - `404 Not Found` - User not found
 - `500 Internal Server Error` - Server error
 
-### 5. Get User Location
+### 3. Get User Location
 
-Returns the latest location of a specific user. User must be active.
+Returns the latest location of a specific user.
 
 **Endpoint:** `GET /api/locations/user/{user_id}`
 
@@ -165,7 +100,7 @@ Returns the latest location of a specific user. User must be active.
 
 **Possible Errors:**
 
-- `400 Bad Request` - Invalid ID format or user not active
+- `400 Bad Request` - Invalid ID format
 - `404 Not Found` - User or location not found
 - `500 Internal Server Error` - Server error
 
@@ -189,44 +124,6 @@ const response = await fetch(
 
 const user = await response.json();
 // Store user.id for future use
-```
-
-### Verifying User (Login)
-
-```javascript
-const response = await fetch(
-  "https://live-location-tracking-backend.vercel.app/api/users/verify",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      user_id: "USER_ID_HERE",
-    }),
-  }
-);
-
-const user = await response.json();
-```
-
-### Updating User Status
-
-```javascript
-const response = await fetch(
-  "https://live-location-tracking-backend.vercel.app/api/users/USER_ID_HERE/status",
-  {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      is_active: true,
-    }),
-  }
-);
-
-const user = await response.json();
 ```
 
 ### Updating User Location
@@ -254,7 +151,7 @@ const location = await response.json();
 
 ```javascript
 const response = await fetch(
-  `https://live-location-tracking-backend.vercel.app/api/locations/user/USER_ID_HERE`,
+  `https://live-location-tracking-backend.vercel.app/api/locations/user/${userId}`,
   {
     method: "GET",
     headers: {
