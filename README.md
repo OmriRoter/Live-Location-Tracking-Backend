@@ -357,7 +357,8 @@ uvicorn main:app --reload
 
 ## License
 
-[MIT License](LICENSE)
+This API is provided under the MIT License. Feel free to modify and use it as needed.
+
 
 ## Contact
 
